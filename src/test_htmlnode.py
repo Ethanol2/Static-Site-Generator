@@ -12,10 +12,10 @@ class TestHTMLNode(unittest.TestCase):
         self.assertIsNotNone(node.children)
         self.assertIsNotNone(node.props)
         
-        self.assertIsNone(node2.tag)
-        self.assertIsNone(node2.value)
-        self.assertIsNone(node2.children)
-        self.assertIsNone(node2.props)
+        self.assertEqual(node2.tag, "")
+        self.assertEqual(node2.value, "")
+        self.assertEqual(node2.children, [])
+        self.assertEqual(node2.props, {})
     
     def test_props(self):
         

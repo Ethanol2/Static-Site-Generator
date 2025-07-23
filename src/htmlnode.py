@@ -1,10 +1,9 @@
-
 class HTMLNode:
     def __init__(self, tag: str = "", value: str = "", childen: list = [], props: dict = {}) -> None:
-        self.tag = tag if tag != "" else None
-        self.value = value if value != "" else None 
-        self.children = childen if len(childen) > 0 else None
-        self.props = props if len(props) > 0 else None
+        self.tag = tag
+        self.value = value
+        self.children = childen
+        self.props = props
     
     def to_html(self) -> str:
         raise NotImplementedError
@@ -21,7 +20,7 @@ class HTMLNode:
     def tag_to_html(self, close: bool = False) -> str:
         html = ""
         
-        if self.tag is not None:
+        if self.tag != '':
             if close:
                 html = f'</{self.tag}>'
             else:
@@ -36,18 +35,30 @@ class HTMLNode:
 
 class LeafNode(HTMLNode):
     def __init__(self, tag: str, value: str, props: dict = {}) -> None:
+        if value is None:
+            raise ValueError("Value can't be None")
+        
         super().__init__(tag, value, [], props)
     
     def to_html(self):
         if self.value is None:
-            raise ValueError
+            raise ValueError(self)
         if self.tag is None:
             return self.value
         
         return f'{self.tag_to_html()}{self.value}{self.tag_to_html(True)}'
     
+class ImageLeafNode(LeafNode):
+    def to_html(self):
+        if self.value is None:
+            raise ValueError(self)
+        if self.tag is None:
+            return self.value
+        
+        return f'<{self.tag}{self.props_to_html()}/>'
+    
 class ParentNode(HTMLNode):
-    def __init__(self, tag: str, childen: list, props: dict = {}) -> None:
+    def __init__(self, tag: str, childen: list[HTMLNode], props: dict = {}) -> None:
         super().__init__(tag, "", childen, props)
     
     def to_html(self):

@@ -24,7 +24,7 @@ class TestTextNode(unittest.TestCase):
     def test_text(self):
         node = TextNode("This is a text node", TextType.PLAIN)
         html_node = text_node_to_html_node(node)
-        self.assertEqual(html_node.tag, None)
+        self.assertEqual(html_node.tag, '')
         self.assertEqual(html_node.value, "This is a text node")
     
     # Test Helper Functions ==================================================================
@@ -271,6 +271,42 @@ class TestTextNode(unittest.TestCase):
             TextNode("Just a boring plain sentence.", TextType.PLAIN)
         ]
         self.assertListEqual(text_to_textnodes(text), expected)
+    
+    def test_repeated_identical_images(self):
+        text = "This is the same text once ![image](https://www.img.com/img) and twice ![image](https://www.img.com/img)"
+        expected = [
+            TextNode("This is the same text once ", TextType.PLAIN),
+            TextNode("image", TextType.IMAGE, "https://www.img.com/img"),
+            TextNode(" and twice ", TextType.PLAIN),
+            TextNode("image", TextType.IMAGE, "https://www.img.com/img")
+        ]
+        
+        new_nodes = text_to_textnodes(text)
+        
+        # for node in new_nodes:
+        #     print("\n")
+        #     print(node)
+        
+        self.assertListEqual(new_nodes, expected)
+
+    def test_repeated_identical_links(self):
+        text = "Check [here](https://example.com) and again [here](https://example.com)"
+        expected = [
+            TextNode("Check ", TextType.PLAIN),
+            TextNode("here", TextType.URL, "https://example.com"),
+            TextNode(" and again ", TextType.PLAIN),
+            TextNode("here", TextType.URL, "https://example.com")
+        ]
+        
+        new_nodes = text_to_textnodes(text)
+        
+        # for node in new_nodes:
+        #     print("\n")
+        #     print(node)
+        
+        self.assertListEqual(new_nodes, expected)
+
+    
     
 if __name__ == "__main__":
     unittest.main()

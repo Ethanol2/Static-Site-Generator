@@ -1,6 +1,6 @@
 import re
 from enum import Enum
-from htmlnode import HTMLNode, LeafNode, ParentNode
+from htmlnode import HTMLNode, LeafNode, ImageLeafNode, ParentNode
 
 class TextType(Enum):
     PLAIN = "plain"
@@ -9,6 +9,15 @@ class TextType(Enum):
     CODE = "code"
     URL = "url"
     IMAGE = "image"
+
+HTML_TEXT_TAGS = {
+    TextType.BOLD: "b",
+    TextType.ITALIC: "i",
+    TextType.CODE: "code",
+    TextType.IMAGE: "img",
+    TextType.URL: "a",
+    TextType.PLAIN: ""
+}
 
 class TextNode:
     def __init__(self, text: str, text_type: TextType, url = None) -> None:
@@ -28,28 +37,17 @@ def text_node_to_html_node(text_node: TextNode) -> HTMLNode:
     
     match text_node.text_type:
         
-        case TextType.PLAIN:
-            return LeafNode(tag="", value=text_node.text)
-        
-        case TextType.BOLD:
-            return LeafNode(tag="b", value=text_node.text)
-        
-        case TextType.ITALIC:
-            return LeafNode(tag="i", value=text_node.text)
-        
-        case TextType.CODE:
-            return LeafNode(tag="code", value=text_node.text)
-        
         case TextType.URL:
             return LeafNode(tag="a", value=text_node.text, props={"href":text_node.url})
         
         case TextType.IMAGE:
-            return LeafNode(tag="img", value="", props={
+            return ImageLeafNode(tag="img", value="", props={
                 "src":text_node.url,
                 "alt":text_node.text
             })
-    
-    raise NotImplementedError
+        
+        case __:
+            return LeafNode(tag=HTML_TEXT_TAGS[text_node.text_type], value=text_node.text)
 
 def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: TextType) -> list[TextNode]:
     new_nodes = []
@@ -116,7 +114,7 @@ def split_nodes_images(old_nodes: list[TextNode]) -> list[TextNode]:
         last_index = 0
         for image in imgs:
             txt_len = len(image[0]) + len(image[1]) + 5
-            index = node.text.find(f'![{image[0]}]')
+            index = node.text.find(f'![{image[0]}]', last_index)
             
             new_nodes.append(TextNode(node.text[last_index:index], TextType.PLAIN))
             new_nodes.append(TextNode(image[0], TextType.IMAGE, image[1]))
@@ -148,7 +146,7 @@ def split_nodes_links(old_nodes: list[TextNode]) -> list[TextNode]:
         last_index = 0
         for url in urls:
             txt_len = len(url[0]) + len(url[1]) + 4
-            index = node.text.find(f'[{url[0]}]')
+            index = node.text.find(f'[{url[0]}]', last_index)
             
             new_nodes.append(TextNode(node.text[last_index:index], TextType.PLAIN))
             new_nodes.append(TextNode(url[0], TextType.URL, url[1]))
