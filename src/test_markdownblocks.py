@@ -1,8 +1,9 @@
 import unittest
 from markdownblock import *
 
+
 class TestMarkdownBlocks(unittest.TestCase):
-    
+
     def test_markdown_to_blocks(self):
         md = """
 This is **bolded** paragraph
@@ -13,12 +14,12 @@ This is the same paragraph on a new line
 - This is a list
 - with items
 """
-        blocks = markdown_to_blocks(md)        
-        
+        blocks = markdown_to_blocks(md)
+
         # for block in blocks:
         #     print("\n")
         #     print(block)
-        
+
         self.assertEqual(
             blocks,
             [
@@ -27,7 +28,7 @@ This is the same paragraph on a new line
                 "- This is a list\n- with items",
             ],
         )
-    
+
     def test_single_block(self):
         text = "This is a single paragraph with **bold** and _italic_."
         expected = ["This is a single paragraph with **bold** and _italic_."]
@@ -52,7 +53,7 @@ This is the same paragraph on a new line
         expected = [
             "# Heading\nSome text here.",
             "![img](https://img.com)",
-            "Another block with [a link](https://example.com)."
+            "Another block with [a link](https://example.com).",
         ]
         self.assertListEqual(markdown_to_blocks(text), expected)
 
@@ -70,7 +71,7 @@ This is the same paragraph on a new line
         text = "   \n \n\n  \n"
         expected = []
         self.assertListEqual(markdown_to_blocks(text), expected)
-        
+
     def test_heading_level_1(self):
         block = "# Heading level 1"
         self.assertEqual(block_to_block_type(block), BlockType.HEADING1)
@@ -106,7 +107,6 @@ This is the same paragraph on a new line
     def test_heading_with_only_hashes_fallback(self):
         block = "###"
         self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
-
 
     def test_heading_invalid_too_many_hashes(self):
         block = "####### Not a heading"
@@ -161,10 +161,10 @@ This is another paragraph with _italic_ text and `code` here
 
         node = markdown_to_html_node(md)
         html = node.to_html()
-        
-        print("\n")
-        print(repr(html))
-        
+
+        # print("\n")
+        # print(repr(html))
+
         self.assertEqual(
             html,
             "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",
@@ -180,18 +180,20 @@ the **same** even with inline stuff
 
         node = markdown_to_html_node(md)
         html = node.to_html()
-        
+
         # print("\n")
         # print(repr(html))
-        
+
         self.assertEqual(
             html,
             "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
         )
-    
+
     def test_single_paragraph(self):
         markdown = "This is a **bold** word and _italic_ too."
-        expected_html = "<div><p>This is a <b>bold</b> word and <i>italic</i> too.</p></div>"
+        expected_html = (
+            "<div><p>This is a <b>bold</b> word and <i>italic</i> too.</p></div>"
+        )
         self.assertEqual(markdown_to_html_node(markdown).to_html(), expected_html)
 
     def test_multiple_paragraphs(self):
@@ -201,35 +203,73 @@ the **same** even with inline stuff
 
     def test_heading_levels(self):
         markdown = "# Heading 1\n\n## Heading 2\n\n### Heading 3"
-        expected_html = "<div><h1>Heading 1</h1><h2>Heading 2</h2><h3>Heading 3</h3></div>"
+        expected_html = (
+            "<div><h1>Heading 1</h1><h2>Heading 2</h2><h3>Heading 3</h3></div>"
+        )
         self.assertEqual(markdown_to_html_node(markdown).to_html(), expected_html)
 
     def test_ordered_list(self):
         markdown = "1. Item one\n2. Item two\n3. Item three"
-        expected_html = "<div><ol><li>Item one</li><li>Item two</li><li>Item three</li></ol></div>"
+        expected_html = (
+            "<div><ol><li>Item one</li><li>Item two</li><li>Item three</li></ol></div>"
+        )
         self.assertEqual(markdown_to_html_node(markdown).to_html(), expected_html)
 
     def test_unordered_list(self):
         markdown = "- Apple\n- Banana\n- Cherry"
-        expected_html = "<div><ul><li>Apple</li><li>Banana</li><li>Cherry</li></ul></div>"
+        expected_html = (
+            "<div><ul><li>Apple</li><li>Banana</li><li>Cherry</li></ul></div>"
+        )
         self.assertEqual(markdown_to_html_node(markdown).to_html(), expected_html)
 
     def test_blockquote(self):
         markdown = "> This is a quote.\n> It has two lines."
-        expected_html = "<div><blockquote>This is a quote.\nIt has two lines.</blockquote></div>"
+        expected_html = (
+            "<div><blockquote>This is a quote.\nIt has two lines.</blockquote></div>"
+        )
         self.assertEqual(markdown_to_html_node(markdown).to_html(), expected_html)
 
     def test_code_block_backticks(self):
         markdown = "```\ndef hello():\n    return 'world'\n```"
-        expected_html = "<div><pre><code>def hello():\n    return 'world'\n</code></pre></div>"
+        expected_html = (
+            "<div><pre><code>def hello():\n    return 'world'\n</code></pre></div>"
+        )
         self.assertEqual(markdown_to_html_node(markdown).to_html(), expected_html)
 
     def test_links_and_images(self):
         markdown = "Here is a [link](https://example.com) and an ![image](https://img.com/img.png)"
-        expected_html = "<div><p>Here is a <a href=\"https://example.com\">link</a> and an <img src=\"https://img.com/img.png\" alt=\"image\"/></p></div>"
+        expected_html = '<div><p>Here is a <a href="https://example.com">link</a> and an <img src="https://img.com/img.png" alt="image"/></p></div>'
         self.assertEqual(markdown_to_html_node(markdown).to_html(), expected_html)
 
-    
-    
+    def test_extracts_title_from_h1(self):
+        markdown = "# This is the Title\n\nSome paragraph text."
+        parent_node = markdown_to_html_node(markdown)
+        self.assertEqual(extract_title(parent_node), "This is the Title")
+
+    def test_ignores_lower_heading_levels(self):
+        markdown = "## Not the Title\n\n### Also not the Title\n\nRegular text."
+        parent_node = markdown_to_html_node(markdown)
+        with self.assertRaises(Exception):
+            extract_title(parent_node)
+
+    def test_throws_exception_if_no_headings(self):
+        markdown = "Just a regular paragraph.\n\nAnother paragraph."
+        parent_node = markdown_to_html_node(markdown)
+        with self.assertRaises(Exception):
+            extract_title(parent_node)
+
+    def test_uses_first_h1_only(self):
+        markdown = "# First Title\n\n# Second Title\n\nParagraph."
+        parent_node = markdown_to_html_node(markdown)
+        self.assertEqual(extract_title(parent_node), "First Title")
+
+    def test_ignores_inline_formatting_in_h1(self):
+        markdown = "# This is **bold** and _italic_ in a title"
+        parent_node = markdown_to_html_node(markdown)
+        self.assertEqual(
+            extract_title(parent_node), "This is bold and italic in a title"
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
