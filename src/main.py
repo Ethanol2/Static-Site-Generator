@@ -14,11 +14,11 @@ def main():
         base_path = sys.argv[1]
 
     # Create paths
-    public_path = os.path.join(base_path, "docs/")
+    static_path = "static/"
+    content_path = "content/"
+    template_path = "template.html"
 
-    static_path = os.path.join(base_path, "static/")
-    content_path = os.path.join(base_path, "content/")
-    template_path = os.path.join(base_path, "template.html")
+    public_path = "docs/"
 
     # Check paths exist
     if not os.path.exists(static_path):
@@ -31,6 +31,7 @@ def main():
     # Clear the public folder
     if os.path.exists(public_path):
         shutil.rmtree(public_path)
+
     os.mkdir(public_path)
 
     # Populate public folder
@@ -66,13 +67,14 @@ def generate_pages_recursive(
             generate_page(base_path, path, template_path, dest_path[:-3] + ".html")
 
 
-def generate_page(base_path: str, from_path: str, template_path: str, dest_path: str):
-    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+def generate_page(base_path: str, src_path: str, template_path: str, dest_path: str):
 
-    if from_path is None or template_path is None or dest_path is None:
+    print(f"Generating page from {src_path} to {dest_path} using {template_path}")
+
+    if src_path is None or template_path is None or dest_path is None:
         raise Exception("Error: All paths must have a value")
 
-    with open(from_path) as f:
+    with open(src_path) as f:
         file_contents = f.read()
         f.close()
 
